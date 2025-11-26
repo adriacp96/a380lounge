@@ -7,8 +7,8 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="A380 Lounge">
 
-<link rel="apple-touch-icon" href="https://i.imghippo.com/files/LoVl6333glc.png">
-<link rel="icon" type="image/png" href="https://i.imghippo.com/files/LoVl6333glc.png">
+<link rel="apple-touch-icon" href="https://i.imghippo.com/files/LoVl6333glc.png?v=2">
+<link rel="icon" type="image/png" href="https://i.imghippo.com/files/LoVl6333glc.png?v=2">
 
 <meta name="theme-color" content="#F2F2F7" media="(prefers-color-scheme: light)">
 <meta name="theme-color" content="#000000" media="(prefers-color-scheme: dark)">
@@ -27,6 +27,8 @@
         --shadow: rgba(0,0,0,0.05);
         --btn-active: #e5e5e5;
         --info-icon: #007AFF;
+        --action-btn-bg: #007AFF;
+        --action-btn-text: #ffffff;
     }
 
     @media (prefers-color-scheme: dark) {
@@ -41,6 +43,8 @@
             --shadow: rgba(0,0,0,0.5);
             --btn-active: #333333;
             --info-icon: #0A84FF;
+            --action-btn-bg: #0A84FF;
+            --action-btn-text: #ffffff;
         }
     }
 
@@ -195,7 +199,8 @@
         display: flex;
         align-items: center;
         justify-content: center;
-        font-family: serif; /* For the 'i' look */
+        font-family: serif; 
+        background: var(--card-bg);
     }
 
     /* === DETAIL OVERLAY === */
@@ -286,13 +291,40 @@
         border-radius: 12px; font-size: 15px; font-weight: 500;
     }
 
-    /* Preparation Steps Styling */
+    /* Preparation Reveal Styles */
+    .action-btn {
+        width: 100%;
+        padding: 16px;
+        border-radius: 14px;
+        background-color: var(--action-btn-bg);
+        color: var(--action-btn-text);
+        font-size: 16px;
+        font-weight: 700;
+        border: none;
+        cursor: pointer;
+        margin-bottom: 20px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        gap: 8px;
+        box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+        transition: transform 0.1s;
+    }
+    .action-btn:active { transform: scale(0.98); opacity: 0.9; }
+
     .prep-card {
         background: var(--card-bg);
         border-radius: 20px;
         padding: 20px;
         text-align: left;
         box-shadow: 0 4px 12px var(--shadow);
+        animation: slideDown 0.3s ease-out;
+        margin-bottom: 40px;
+    }
+
+    @keyframes slideDown {
+        from { opacity: 0; transform: translateY(-10px); }
+        to { opacity: 1; transform: translateY(0); }
     }
     
     .prep-title {
@@ -300,8 +332,6 @@
         font-size: 18px;
         font-weight: 700;
         color: var(--text);
-        display: flex;
-        align-items: center;
     }
     
     .prep-list {
@@ -352,14 +382,6 @@
 </div>
 
 <script>
-/* DB Updated with steps from PDF sources:
-   Bloody Mary [cite: 82], Cosmopolitan [cite: 130], Martini[cite: 155], 
-   Kir Royale [cite: 188], Manhattan [cite: 215], Breakfast Martini[cite: 250], 
-   Espresso Martini [cite: 275], Mojito [cite: 300], Old Fashioned[cite: 349], 
-   Champagne Cktl [cite: 377], Negroni [cite: 397], Aperol[cite: 440], 
-   Orange Fizz [cite: 472], Apple Spritzer [cite: 498], Cucumber Gimlet[cite: 524], 
-   Virgin Mary [cite: 648], Virgin Mojito [cite: 697], Bottle Mocktails [cite: 721]
-*/
 const drinksDB = {
     'bloody-mary': { 
         name: "Bloody Mary", type: "cocktails", icon: "🍅", method: "Build", mClass: "m-build", glass: "Tumbler", ice: "3-4 Cubes", 
@@ -622,11 +644,12 @@ const drinksDB = {
 const cockDiv = document.getElementById('grid-cocktails');
 const mockDiv = document.getElementById('grid-mocktails');
 
+// Populate Grid
 for (const [key, data] of Object.entries(drinksDB)) {
     const btn = document.createElement('button');
     btn.className = 'drink-btn';
     btn.onclick = () => openDrink(key);
-    // Added info-badge div for the visual "button" requested
+    // Visual info badge only
     btn.innerHTML = `
         <div class="info-badge">i</div>
         <div class="btn-icon">${data.icon}</div>
@@ -648,9 +671,11 @@ function openDrink(id) {
     
     // Build Ingredients List
     let ingredientsHTML = "";
-    data.ing.forEach(item => {
-        ingredientsHTML += `<li><span class="qty">${item[0]}</span> <span>${item[1]}</span></li>`;
-    });
+    if(data.ing) {
+        data.ing.forEach(item => {
+            ingredientsHTML += `<li><span class="qty">${item[0]}</span> <span>${item[1]}</span></li>`;
+        });
+    }
 
     // Build Steps List
     let stepsHTML = "";
@@ -673,7 +698,9 @@ function openDrink(id) {
             <div class="garnish-box">Garnish: ${data.garnish}</div>
         </div>
 
-        <div class="prep-card">
+        <button id="toggle-prep-btn" class="action-btn" onclick="togglePrep()">Show Preparation Instructions</button>
+
+        <div id="prep-card" class="prep-card" style="display:none">
             <h3 class="prep-title">Preparation</h3>
             <ol class="prep-list">
                 ${stepsHTML}
@@ -686,6 +713,18 @@ function openDrink(id) {
 
 function closeDetail() {
     document.getElementById('view-detail').classList.remove('open');
+}
+
+function togglePrep() {
+    const card = document.getElementById('prep-card');
+    const btn = document.getElementById('toggle-prep-btn');
+    if (card.style.display === 'none') {
+        card.style.display = 'block';
+        btn.innerText = "Hide Preparation Instructions";
+    } else {
+        card.style.display = 'none';
+        btn.innerText = "Show Preparation Instructions";
+    }
 }
 
 function filterGrid() {
