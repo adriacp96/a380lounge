@@ -7,6 +7,9 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="A380 Lounge">
 
+<link rel="apple-touch-icon" href="https://i.imghippo.com/files/LoVl6333glc.png">
+<link rel="icon" type="image/png" href="https://i.imghippo.com/files/LoVl6333glc.png">
+
 <meta name="theme-color" content="#F2F2F7" media="(prefers-color-scheme: light)">
 <meta name="theme-color" content="#000000" media="(prefers-color-scheme: dark)">
 
@@ -23,6 +26,7 @@
         --input-bg: #E3E3E8;
         --shadow: rgba(0,0,0,0.05);
         --btn-active: #e5e5e5;
+        --info-icon: #007AFF;
     }
 
     @media (prefers-color-scheme: dark) {
@@ -36,6 +40,7 @@
             --input-bg: #2C2C2E;
             --shadow: rgba(0,0,0,0.5);
             --btn-active: #333333;
+            --info-icon: #0A84FF;
         }
     }
 
@@ -63,6 +68,8 @@
         padding-top: env(safe-area-inset-top);
         padding-bottom: 10px;
         box-shadow: 0 1px 0 rgba(128,128,128,0.1);
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
     }
 
     .app-title {
@@ -119,7 +126,7 @@
     }
 
     .tab-btn.active {
-        background: var(--card-bg); /* White/Black in tabs */
+        background: var(--card-bg);
         color: var(--text);
         box-shadow: 0 1px 3px rgba(0,0,0,0.1);
     }
@@ -130,7 +137,7 @@
         box-sizing: border-box;
         padding-top: calc(env(safe-area-inset-top) + 90px); /* Space for header */
         padding-bottom: env(safe-area-inset-bottom);
-        overflow-y: auto; /* Allow scroll if screen is unexpectedly small */
+        overflow-y: auto;
     }
 
     .drink-grid {
@@ -157,7 +164,8 @@
         justify-content: center;
         gap: 8px;
         cursor: pointer;
-        aspect-ratio: 1 / 1; /* Square buttons */
+        aspect-ratio: 1 / 1;
+        position: relative;
     }
 
     .drink-btn:active { transform: scale(0.96); background: var(--btn-active); }
@@ -170,6 +178,24 @@
         color: var(--text);
         line-height: 1.1;
         max-width: 90%;
+    }
+
+    /* Info Badge on Grid Items */
+    .info-badge {
+        position: absolute;
+        top: 6px;
+        right: 6px;
+        width: 18px;
+        height: 18px;
+        border-radius: 50%;
+        border: 1.5px solid var(--info-icon);
+        color: var(--info-icon);
+        font-size: 11px;
+        font-weight: 800;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-family: serif; /* For the 'i' look */
     }
 
     /* === DETAIL OVERLAY === */
@@ -207,15 +233,18 @@
         display: flex;
         align-items: center;
         padding: 8px 0;
+        cursor: pointer;
     }
 
-    .detail-content { flex: 1; overflow-y: auto; padding: 20px; }
+    .detail-content { flex: 1; overflow-y: auto; padding: 20px; padding-bottom: 100px; }
     
     .detail-card {
         background: var(--card-bg);
         border-radius: 20px;
         padding: 24px 20px;
         text-align: center;
+        margin-bottom: 20px;
+        box-shadow: 0 4px 12px var(--shadow);
     }
 
     .detail-icon-large { font-size: 60px; display: block; margin-bottom: 10px; }
@@ -256,6 +285,38 @@
         margin-top: 20px; background: var(--input-bg); padding: 12px;
         border-radius: 12px; font-size: 15px; font-weight: 500;
     }
+
+    /* Preparation Steps Styling */
+    .prep-card {
+        background: var(--card-bg);
+        border-radius: 20px;
+        padding: 20px;
+        text-align: left;
+        box-shadow: 0 4px 12px var(--shadow);
+    }
+    
+    .prep-title {
+        margin: 0 0 15px 0;
+        font-size: 18px;
+        font-weight: 700;
+        color: var(--text);
+        display: flex;
+        align-items: center;
+    }
+    
+    .prep-list {
+        padding-left: 20px;
+        margin: 0;
+        color: var(--text);
+    }
+    
+    .prep-list li {
+        margin-bottom: 12px;
+        line-height: 1.4;
+        font-size: 15px;
+    }
+    
+    .prep-list li:last-child { margin-bottom: 0; }
 </style>
 </head>
 <body>
@@ -291,30 +352,271 @@
 </div>
 
 <script>
+/* DB Updated with steps from PDF sources:
+   Bloody Mary [cite: 82], Cosmopolitan [cite: 130], Martini[cite: 155], 
+   Kir Royale [cite: 188], Manhattan [cite: 215], Breakfast Martini[cite: 250], 
+   Espresso Martini [cite: 275], Mojito [cite: 300], Old Fashioned[cite: 349], 
+   Champagne Cktl [cite: 377], Negroni [cite: 397], Aperol[cite: 440], 
+   Orange Fizz [cite: 472], Apple Spritzer [cite: 498], Cucumber Gimlet[cite: 524], 
+   Virgin Mary [cite: 648], Virgin Mojito [cite: 697], Bottle Mocktails [cite: 721]
+*/
 const drinksDB = {
-    'bloody-mary': { name: "Bloody Mary", type: "cocktails", icon: "🍅", method: "Build", mClass: "m-build", glass: "Tumbler", ice: "3-4 Cubes", ing: [["Double", "Vodka"], ["Top Up", "Big Tom"]], garnish: "Lemon, Celery" },
-    'cosmopolitan': { name: "Cosmopolitan", type: "cocktails", icon: "🍸", method: "Shake", mClass: "m-shake", glass: "Cocktail Glass", ice: "In Shaker", ing: [["1½", "Vodka"], ["½", "Cointreau"], ["1", "Cranberry"], ["½", "Lime"]], garnish: "None" },
-    'martini': { name: "Classic Martini", type: "cocktails", icon: "🍸", method: "Stir/Shake", mClass: "m-stir", glass: "Cocktail Glass", ice: "In Shaker", ing: [["Double", "Gin/Vodka"], ["½", "Martini Dry"]], garnish: "Olive" },
-    'kir-royale': { name: "Kir Royale", type: "cocktails", icon: "🥂", method: "Build", mClass: "m-build", glass: "Flute", ice: "None", ing: [["⅓", "Cassis"], ["Top Up", "Champagne"]], garnish: "None" },
-    'manhattan': { name: "Manhattan", type: "cocktails", icon: "🥃", method: "Stir", mClass: "m-stir", glass: "Tumbler", ice: "In Shaker", ing: [["Double", "Bourbon"], ["2 Dash", "Angostura"], ["½", "Vermouth"]], garnish: "Cherry/Lemon" },
-    'breakfast-martini': { name: "Breakfast Martini", type: "cocktails", icon: "🍊", method: "Shake", mClass: "m-shake", glass: "Cocktail Glass", ice: "In Shaker", ing: [["1", "Gin"], ["½", "Cointreau"], ["1 tsp", "Marmalade"], ["½", "Lime"], ["½", "Orange"]], garnish: "None" },
-    'espresso-martini': { name: "Espresso Martini", type: "cocktails", icon: "☕️", method: "Hard Shake", mClass: "m-shake", glass: "Cocktail Glass", ice: "In Shaker", ing: [["1", "Vodka"], ["1", "Tia Maria"], ["1", "Espresso"]], garnish: "3 Beans" },
-    'mojito': { name: "Mojito", type: "cocktails", icon: "🌱", method: "Muddle", mClass: "m-muddle", glass: "Tumbler", ice: "3-4 Cubes", ing: [["Base", "Lime/Mint/Sugar"], ["Double", "Rum"], ["Top Up", "Soda"]], garnish: "Mint" },
-    'old-fashioned': { name: "Old Fashioned", type: "cocktails", icon: "🥃", method: "Stir", mClass: "m-stir", glass: "Tumbler", ice: "3-4 Cubes", ing: [["Double", "Bourbon"], ["1", "Sugar"], ["2 Dash", "Angostura"]], garnish: "Orange, Cherry" },
-    'champagne-cocktail': { name: "Champagne Cktl", type: "cocktails", icon: "🍾", method: "Build", mClass: "m-build", glass: "Flute", ice: "None", ing: [["½", "Cognac"], ["Base", "Sugar/Bitters"], ["Top Up", "Champagne"]], garnish: "Cherry, Orange" },
-    'negroni': { name: "Negroni", type: "cocktails", icon: "🥃", method: "Stir", mClass: "m-stir", glass: "Tumbler", ice: "Over 3-4 Cubes", ing: [["1", "Gin"], ["1", "Campari"], ["1", "Martini Rosso"]], garnish: "Orange" },
-    'aperol': { name: "Aperol Spritz", type: "cocktails", icon: "🍹", method: "Build", mClass: "m-build", glass: "Wine Glass", ice: "3-4 Cubes", ing: [["JCL", "¾ Full"], ["FCL", "Full Bottle"]], garnish: "Orange" },
+    'bloody-mary': { 
+        name: "Bloody Mary", type: "cocktails", icon: "🍅", method: "Build", mClass: "m-build", glass: "Tumbler", ice: "3-4 Cubes", 
+        ing: [["Double", "Vodka"], ["Top Up", "Big Tom"]], 
+        garnish: "Lemon, Celery",
+        steps: [
+            "Place 3-4 cubes of ice inside the tumbler.",
+            "Pour a double measure of vodka.",
+            "Top up glass with Big Tom spiced tomato juice.",
+            "(Optionally add Worcestershire, Tabasco, Salt, Pepper to taste).",
+            "Garnish with a lemon slice and celery stick."
+        ]
+    },
+    'cosmopolitan': { 
+        name: "Cosmopolitan", type: "cocktails", icon: "🍸", method: "Shake", mClass: "m-shake", glass: "Cocktail Glass", ice: "In Shaker", 
+        ing: [["1½", "Vodka"], ["½", "Cointreau"], ["1", "Cranberry"], ["½", "Lime"]], 
+        garnish: "None",
+        steps: [
+            "Fill half the cocktail shaker with ice cubes.",
+            "Pour 1½ single measures of Vodka and ½ single measure of Cointreau.",
+            "Add a single measure of cranberry juice.",
+            "Add half a single measure of lime juice.",
+            "Shake for 10 seconds and strain it into the glass."
+        ]
+    },
+    'martini': { 
+        name: "Classic Martini", type: "cocktails", icon: "🍸", method: "Stir/Shake", mClass: "m-stir", glass: "Cocktail Glass", ice: "In Shaker", 
+        ing: [["Double", "Gin/Vodka"], ["½", "Martini Dry"]], 
+        garnish: "Olive",
+        steps: [
+            "Fill half the cocktail shaker with ice cubes.",
+            "Pour a double measure of Dry Gin (or Vodka) and ½ single measure of Martini Extra Dry.",
+            "Stir or shake (according to preference) for 10 seconds.",
+            "Strain it into the glass.",
+            "Drop the olive skewer into the glass."
+        ]
+    },
+    'kir-royale': { 
+        name: "Kir Royale", type: "cocktails", icon: "🥂", method: "Build", mClass: "m-build", glass: "Flute", ice: "None", 
+        ing: [["⅓", "Cassis"], ["Top Up", "Champagne"]], 
+        garnish: "None",
+        steps: [
+            "Pour a third of a single measure of Crème de Cassis into a champagne glass.",
+            "Top up slowly with champagne.",
+            "Gently stir if the Cassis settles at the bottom."
+        ]
+    },
+    'manhattan': { 
+        name: "Manhattan", type: "cocktails", icon: "🥃", method: "Stir", mClass: "m-stir", glass: "Tumbler", ice: "In Shaker", 
+        ing: [["Double", "Bourbon"], ["2 Dash", "Angostura"], ["½", "Vermouth"]], 
+        garnish: "Cherry/Lemon",
+        steps: [
+            "Fill half the cocktail shaker with ice cubes.",
+            "Pour a double measure of bourbon whiskey.",
+            "Add two dashes of Angostura bitters.",
+            "Add vermouth (½ Dry for Dry Manhattan, ½ Rosso for Sweet, ¼ of both for Perfect).",
+            "Stir for 10 seconds and strain into a tumbler.",
+            "Garnish with lemon (Dry) or cherry (Sweet/Perfect)."
+        ]
+    },
+    'breakfast-martini': { 
+        name: "Breakfast Martini", type: "cocktails", icon: "🍊", method: "Shake", mClass: "m-shake", glass: "Cocktail Glass", ice: "In Shaker", 
+        ing: [["1", "Gin"], ["½", "Cointreau"], ["1 tsp", "Marmalade"], ["½", "Lime"], ["½", "Orange"]], 
+        garnish: "None",
+        steps: [
+            "Fill half the cocktail shaker with ice cubes.",
+            "Add 1 teaspoon of orange marmalade.",
+            "Pour ½ single measure of Cointreau and a single measure of Dry Gin.",
+            "Add ½ single measure of lime juice and ½ single measure of fresh orange juice.",
+            "Shake for 10 seconds and strain it into the glass."
+        ]
+    },
+    'espresso-martini': { 
+        name: "Espresso Martini", type: "cocktails", icon: "☕️", method: "Hard Shake", mClass: "m-shake", glass: "Cocktail Glass", ice: "In Shaker", 
+        ing: [["1", "Vodka"], ["1", "Tia Maria"], ["1", "Espresso"]], 
+        garnish: "3 Beans",
+        steps: [
+            "Fill half the cocktail shaker with ice cubes.",
+            "Pour a single measure of vodka.",
+            "Pour a single measure of Tia Maria.",
+            "Add a single measure of espresso coffee.",
+            "Vigorously shake for 10 seconds to create foam and strain into glass.",
+            "Garnish with three coffee beans."
+        ]
+    },
+    'mojito': { 
+        name: "Mojito", type: "cocktails", icon: "🌱", method: "Muddle", mClass: "m-muddle", glass: "Tumbler", ice: "3-4 Cubes", 
+        ing: [["Base", "Lime/Mint/Sugar"], ["Double", "Rum"], ["Top Up", "Soda"]], 
+        garnish: "Mint",
+        steps: [
+            "Add 2 sachets of sugar syrup into a tumbler glass.",
+            "Add 4 lime wedges and 10 mint leaves.",
+            "Muddle (mix and crush) the ingredients.",
+            "Add a double measure of white rum.",
+            "Add 3-4 cubes of ice.",
+            "Top up with soda and garnish with mint sprig."
+        ]
+    },
+    'old-fashioned': { 
+        name: "Old Fashioned", type: "cocktails", icon: "🥃", method: "Stir", mClass: "m-stir", glass: "Tumbler", ice: "3-4 Cubes", 
+        ing: [["Double", "Bourbon"], ["1", "Sugar"], ["2 Dash", "Angostura"]], 
+        garnish: "Orange, Cherry",
+        steps: [
+            "Add one sachet of sugar syrup.",
+            "Add two dashes of Angostura bitters.",
+            "Pour a double measure of Bourbon Whiskey.",
+            "Place 3-4 cubes of ice inside the tumbler.",
+            "Stir the ingredients for 10 seconds.",
+            "Garnish with a cherry and orange slice."
+        ]
+    },
+    'champagne-cocktail': { 
+        name: "Champagne Cktl", type: "cocktails", icon: "🍾", method: "Build", mClass: "m-build", glass: "Flute", ice: "None", 
+        ing: [["½", "Cognac"], ["Base", "Sugar/Bitters"], ["Top Up", "Champagne"]], 
+        garnish: "Cherry, Orange",
+        steps: [
+            "Pour 1 sachet of sugar into the champagne flute.",
+            "Add 2 dashes of Angostura bitters.",
+            "Add half a single measure of cognac.",
+            "Top up slowly with champagne.",
+            "Garnish with a cherry and orange slice. Gently stir."
+        ]
+    },
+    'negroni': { 
+        name: "Negroni", type: "cocktails", icon: "🥃", method: "Stir", mClass: "m-stir", glass: "Tumbler", ice: "Over 3-4 Cubes", 
+        ing: [["1", "Gin"], ["1", "Campari"], ["1", "Martini Rosso"]], 
+        garnish: "Orange",
+        steps: [
+            "Fill half the cocktail shaker with ice cubes.",
+            "Pour single measures of: Dry Gin, Campari, and Martini Rosso.",
+            "Stir for 10 seconds.",
+            "Place 3-4 cubes of ice inside the tumbler.",
+            "Strain and pour over the ice into the tumbler.",
+            "Garnish with an orange slice."
+        ]
+    },
+    'aperol': { 
+        name: "Aperol Spritz", type: "cocktails", icon: "🍹", method: "Build", mClass: "m-build", glass: "Wine Glass", ice: "3-4 Cubes", 
+        ing: [["JCL", "¾ Full"], ["FCL", "Full Bottle"]], 
+        garnish: "Orange",
+        steps: [
+            "Place 3-4 cubes of ice (and orange slice for Business) inside a wine glass.",
+            "Pour Aperol Spritz bottle (Full bottle for First, 3/4 for Business).",
+            "Garnish with an orange slice.",
+            "Present with a straw."
+        ]
+    },
 
-    'orange-fizz': { name: "Orange Fizz", type: "mocktails", icon: "🍊", method: "Build", mClass: "m-build", glass: "Flute", ice: "None", ing: [["½", "Orange Juice"], ["Top Up", "Ginger Ale"]], garnish: "None" },
-    'apple-spritzer': { name: "Apple Spritzer", type: "mocktails", icon: "🍏", method: "Build", mClass: "m-build", glass: "Flute", ice: "None", ing: [["½", "Apple Juice"], ["Top Up", "Soda"]], garnish: "Mint" },
-    'cucumber-gimlet': { name: "Cucumber Gimlet", type: "mocktails", icon: "🥒", method: "Muddle", mClass: "m-muddle", glass: "Tumbler", ice: "3-4 Cubes", ing: [["Base", "Cuc/Sugar/Lime"], ["Top Up", "Soda"]], garnish: "Mint" },
-    'virgin-mary': { name: "Virgin Mary", type: "mocktails", icon: "🍅", method: "Build", mClass: "m-build", glass: "Tumbler", ice: "3-4 Cubes", ing: [["Fill", "Big Tom"]], garnish: "Lemon, Celery" },
-    'virgin-mojito': { name: "Virgin Mojito", type: "mocktails", icon: "🌱", method: "Muddle", mClass: "m-muddle", glass: "Tumbler", ice: "3-4 Cubes", ing: [["Base", "Lime/Mint/Sugar"], ["Top Up", "Soda"]], garnish: "Mint" },
-    'rose-tea': { name: "Rose Iced Tea", type: "mocktails", icon: "🌸", method: "Shake Bottle", mClass: "m-shake", glass: "Tumbler", ice: "Ice", ing: [["Pour", "Pre-Mixed"]], garnish: "Basil, Flower" },
-    'tropical': { name: "Tropical Twist", type: "mocktails", icon: "🍌", method: "Shake Bottle", mClass: "m-shake", glass: "Tumbler", ice: "Ice", ing: [["Pour", "Pre-Mixed"]], garnish: "Basil, Apple" },
-    'citrus': { name: "Citrus Twist", type: "mocktails", icon: "🍋", method: "Shake Bottle", mClass: "m-shake", glass: "Tumbler", ice: "Ice", ing: [["Pour", "Pre-Mixed"]], garnish: "Mint, Lime" },
-    'raspberry': { name: "Raspberry Spice", type: "mocktails", icon: "🍓", method: "Shake Bottle", mClass: "m-shake", glass: "Tumbler", ice: "Ice", ing: [["Pour", "Pre-Mixed"]], garnish: "Flower, Orange" },
-    'mint-lemonade': { name: "Mint Lemonade", type: "mocktails", icon: "🍋", method: "Shake Bottle", mClass: "m-shake", glass: "Tumbler", ice: "Ice", ing: [["Pour", "Pre-Mixed"]], garnish: "Mint" }
+    'orange-fizz': { 
+        name: "Orange Fizz", type: "mocktails", icon: "🍊", method: "Build", mClass: "m-build", glass: "Flute", ice: "None", 
+        ing: [["½", "Orange Juice"], ["Top Up", "Ginger Ale"]], 
+        garnish: "None",
+        steps: [
+            "Half fill a champagne flute with fresh orange juice.",
+            "Top up with ginger ale."
+        ]
+    },
+    'apple-spritzer': { 
+        name: "Apple Spritzer", type: "mocktails", icon: "🍏", method: "Build", mClass: "m-build", glass: "Flute", ice: "None", 
+        ing: [["½", "Apple Juice"], ["Top Up", "Soda"]], 
+        garnish: "Mint",
+        steps: [
+            "Half fill a champagne flute with apple juice.",
+            "Top up with soda water.",
+            "Garnish with a mint sprig."
+        ]
+    },
+    'cucumber-gimlet': { 
+        name: "Cucumber Gimlet", type: "mocktails", icon: "🥒", method: "Muddle", mClass: "m-muddle", glass: "Tumbler", ice: "3-4 Cubes", 
+        ing: [["Base", "Cuc/Sugar/Lime"], ["Top Up", "Soda"]], 
+        garnish: "Mint",
+        steps: [
+            "Add one sachet of sugar syrup.",
+            "Add 2-3 cucumber ribbons and ½ single measure of lime juice.",
+            "Muddle (mix and crush) the ingredients.",
+            "Add 3-4 cubes of ice and gently stir.",
+            "Top up with soda and garnish with mint."
+        ]
+    },
+    'virgin-mary': { 
+        name: "Virgin Mary", type: "mocktails", icon: "🍅", method: "Build", mClass: "m-build", glass: "Tumbler", ice: "3-4 Cubes", 
+        ing: [["Fill", "Big Tom"]], 
+        garnish: "Lemon, Celery",
+        steps: [
+            "Place 3-4 cubes of ice inside the tumbler.",
+            "Top up glass with Big Tom spiced tomato juice.",
+            "(Or regular tomato juice + spices to taste).",
+            "Garnish with a lemon slice and celery stick."
+        ]
+    },
+    'virgin-mojito': { 
+        name: "Virgin Mojito", type: "mocktails", icon: "🌱", method: "Muddle", mClass: "m-muddle", glass: "Tumbler", ice: "3-4 Cubes", 
+        ing: [["Base", "Lime/Mint/Sugar"], ["Top Up", "Soda"]], 
+        garnish: "Mint",
+        steps: [
+            "Add 2 sachets of sugar syrup into a tumbler glass.",
+            "Add 4 lime wedges and 10 mint leaves.",
+            "Muddle (mix and crush) the ingredients.",
+            "Add 3-4 cubes of ice.",
+            "Top up with soda and garnish with mint."
+        ]
+    },
+    'rose-tea': { 
+        name: "Rose Iced Tea", type: "mocktails", icon: "🌸", method: "Shake Bottle", mClass: "m-shake", glass: "Tumbler", ice: "Ice", 
+        ing: [["Pour", "Pre-Mixed"]], 
+        garnish: "Basil, Flower",
+        steps: [
+            "Shake pre-mixed mocktail bottles well before use.",
+            "Add 3-4 cubes of ice.",
+            "Pour the pre-mixed mocktail in the glass.",
+            "Garnish with a basil leaf and an edible flower."
+        ]
+    },
+    'tropical': { 
+        name: "Tropical Twist", type: "mocktails", icon: "🍌", method: "Shake Bottle", mClass: "m-shake", glass: "Tumbler", ice: "Ice", 
+        ing: [["Pour", "Pre-Mixed"]], 
+        garnish: "Basil, Apple",
+        steps: [
+            "Shake pre-mixed mocktail bottles well before use.",
+            "Add 3-4 cubes of ice.",
+            "Pour the pre-mixed mocktail in the glass.",
+            "Garnish with a basil leaf and dehydrated green apple."
+        ]
+    },
+    'citrus': { 
+        name: "Citrus Twist", type: "mocktails", icon: "🍋", method: "Shake Bottle", mClass: "m-shake", glass: "Tumbler", ice: "Ice", 
+        ing: [["Pour", "Pre-Mixed"]], 
+        garnish: "Mint, Lime",
+        steps: [
+            "Shake pre-mixed mocktail bottles well before use.",
+            "Add 3-4 cubes of ice.",
+            "Pour the pre-mixed mocktail in the glass.",
+            "Garnish with mint leaves and dehydrated lime."
+        ]
+    },
+    'raspberry': { 
+        name: "Raspberry Spice", type: "mocktails", icon: "🍓", method: "Shake Bottle", mClass: "m-shake", glass: "Tumbler", ice: "Ice", 
+        ing: [["Pour", "Pre-Mixed"]], 
+        garnish: "Flower, Orange",
+        steps: [
+            "Shake pre-mixed mocktail bottles well before use.",
+            "Add 3-4 cubes of ice.",
+            "Pour the pre-mixed mocktail in the glass.",
+            "Garnish with edible flower and orange slice."
+        ]
+    },
+    'mint-lemonade': { 
+        name: "Mint Lemonade", type: "mocktails", icon: "🍋", method: "Shake Bottle", mClass: "m-shake", glass: "Tumbler", ice: "Ice", 
+        ing: [["Pour", "Pre-Mixed"]], 
+        garnish: "Mint",
+        steps: [
+            "Shake pre-mixed mocktail bottles well before use.",
+            "Add 3-4 cubes of ice.",
+            "Pour the pre-mixed mocktail in the glass.",
+            "Garnish with a sprig of mint."
+        ]
+    }
 };
 
 const cockDiv = document.getElementById('grid-cocktails');
@@ -324,7 +626,12 @@ for (const [key, data] of Object.entries(drinksDB)) {
     const btn = document.createElement('button');
     btn.className = 'drink-btn';
     btn.onclick = () => openDrink(key);
-    btn.innerHTML = `<div class="btn-icon">${data.icon}</div><div class="btn-label">${data.name}</div>`;
+    // Added info-badge div for the visual "button" requested
+    btn.innerHTML = `
+        <div class="info-badge">i</div>
+        <div class="btn-icon">${data.icon}</div>
+        <div class="btn-label">${data.name}</div>
+    `;
     if(data.type === 'cocktails') cockDiv.appendChild(btn);
     else mockDiv.appendChild(btn);
 }
@@ -338,10 +645,20 @@ function switchTab(type, btn) {
 
 function openDrink(id) {
     const data = drinksDB[id];
+    
+    // Build Ingredients List
     let ingredientsHTML = "";
     data.ing.forEach(item => {
         ingredientsHTML += `<li><span class="qty">${item[0]}</span> <span>${item[1]}</span></li>`;
     });
+
+    // Build Steps List
+    let stepsHTML = "";
+    if (data.steps && data.steps.length > 0) {
+        data.steps.forEach(step => {
+            stepsHTML += `<li>${step}</li>`;
+        });
+    }
 
     const html = `
         <div class="detail-card">
@@ -354,6 +671,13 @@ function openDrink(id) {
             </div>
             <ul class="ingredients-list">${ingredientsHTML}</ul>
             <div class="garnish-box">Garnish: ${data.garnish}</div>
+        </div>
+
+        <div class="prep-card">
+            <h3 class="prep-title">Preparation</h3>
+            <ol class="prep-list">
+                ${stepsHTML}
+            </ol>
         </div>
     `;
     document.getElementById('detail-container').innerHTML = html;
