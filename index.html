@@ -1,0 +1,571 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Cabin Bar">
+<title>Cabin Bar App</title>
+<style>
+    :root {
+        --primary: #d71921; /* Emirates Red */
+        --bg: #F2F2F7;
+        --card-bg: #ffffff;
+        --text: #000000;
+        --secondary: #8E8E93;
+    }
+
+    body {
+        font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", Roboto, sans-serif;
+        background-color: var(--bg);
+        color: var(--text);
+        margin: 0;
+        padding: 0;
+        -webkit-tap-highlight-color: transparent;
+        overflow-x: hidden; /* Prevent horizontal scroll */
+    }
+
+    /* === PANTALLA PRINCIPAL (MENU) === */
+    #view-menu {
+        display: block;
+        padding-bottom: 50px;
+        transition: opacity 0.2s ease;
+    }
+
+    .sticky-header {
+        position: sticky;
+        top: 0;
+        z-index: 1000;
+        background: rgba(242, 242, 247, 0.95);
+        backdrop-filter: blur(20px);
+        -webkit-backdrop-filter: blur(20px);
+        padding-top: env(safe-area-inset-top);
+        border-bottom: 0.5px solid rgba(0,0,0,0.1);
+    }
+
+    .app-title {
+        padding: 10px 20px;
+        margin: 0;
+        font-size: 28px;
+        font-weight: 800;
+        color: var(--text);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .search-box {
+        padding: 0 16px 10px 16px;
+    }
+
+    input[type="text"] {
+        width: 100%;
+        padding: 12px;
+        border-radius: 10px;
+        border: none;
+        background: #E3E3E8;
+        font-size: 17px;
+        box-sizing: border-box;
+        outline: none;
+    }
+
+    .tabs {
+        display: flex;
+        padding: 0 16px 12px 16px;
+        gap: 10px;
+    }
+
+    .tab-btn {
+        flex: 1;
+        padding: 8px;
+        border-radius: 8px;
+        font-weight: 600;
+        font-size: 14px;
+        background: #E3E3E8;
+        border: none;
+        color: var(--text);
+        transition: all 0.2s;
+    }
+
+    .tab-btn.active {
+        background: var(--primary);
+        color: white;
+    }
+
+    /* GRIDS DE BOTONES */
+    .drink-grid {
+        display: none; /* Hidden by default */
+        grid-template-columns: 1fr 1fr; /* 2 columns */
+        gap: 12px;
+        padding: 16px;
+    }
+
+    .drink-grid.active {
+        display: grid;
+    }
+
+    .drink-btn {
+        background: var(--card-bg);
+        border-radius: 12px;
+        padding: 20px 10px;
+        text-align: center;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+        border: none;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 8px;
+        font-size: 15px;
+        font-weight: 600;
+        color: var(--text);
+        transition: transform 0.1s;
+    }
+
+    .drink-btn:active {
+        transform: scale(0.96);
+        background: #e5e5e5;
+    }
+
+    .btn-icon { font-size: 24px; margin-bottom: 4px; }
+
+    /* === PANTALLA DE DETALLE (Overlay) === */
+    #view-detail {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: var(--bg);
+        z-index: 2000;
+        transform: translateX(100%); /* Start off-screen right */
+        transition: transform 0.3s cubic-bezier(0.25, 1, 0.5, 1);
+        display: flex;
+        flex-direction: column;
+        padding-top: env(safe-area-inset-top);
+    }
+
+    #view-detail.open {
+        transform: translateX(0);
+    }
+
+    .detail-header {
+        padding: 10px 16px;
+        background: var(--bg);
+        display: flex;
+        align-items: center;
+        border-bottom: 0.5px solid rgba(0,0,0,0.1);
+    }
+
+    .back-btn {
+        background: none;
+        border: none;
+        font-size: 17px;
+        color: #007AFF; /* iOS Blue */
+        font-weight: 400;
+        display: flex;
+        align-items: center;
+        padding: 10px 0;
+        cursor: pointer;
+    }
+
+    .detail-content {
+        flex: 1;
+        overflow-y: auto;
+        padding: 20px;
+    }
+
+    /* Drink Card Styling inside Detail */
+    .detail-card {
+        background: var(--card-bg);
+        border-radius: 16px;
+        padding: 20px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+        text-align: left;
+    }
+
+    .detail-title {
+        margin: 0 0 5px 0;
+        font-size: 28px;
+        color: var(--primary);
+    }
+    
+    .detail-method {
+        display: inline-block;
+        font-size: 12px;
+        text-transform: uppercase;
+        font-weight: 700;
+        padding: 4px 8px;
+        border-radius: 6px;
+        margin-bottom: 20px;
+        color: white;
+        background: #333;
+    }
+    
+    /* Method Colors */
+    .m-shake { background: #007AFF; }
+    .m-stir { background: #5856D6; }
+    .m-build { background: #FF9500; }
+    .m-muddle { background: #FF3B30; }
+
+    .info-row {
+        display: flex;
+        justify-content: space-between;
+        padding: 12px 0;
+        border-bottom: 1px solid #eee;
+        font-size: 15px;
+    }
+    
+    .info-label { color: var(--secondary); font-weight: 500; }
+    .info-val { font-weight: 600; }
+
+    .ingredients-list {
+        margin-top: 20px;
+        list-style: none;
+        padding: 0;
+    }
+
+    .ingredients-list li {
+        margin-bottom: 10px;
+        font-size: 17px;
+        line-height: 1.4;
+        display: flex;
+    }
+
+    .qty { font-weight: 700; min-width: 60px; color: var(--primary); }
+    
+    .garnish-box {
+        margin-top: 20px;
+        background: #F9F9FB;
+        padding: 15px;
+        border-radius: 10px;
+        font-size: 15px;
+        color: #555;
+        font-weight: 500;
+        text-align: center;
+    }
+
+</style>
+</head>
+<body>
+
+<div id="view-menu">
+    <div class="sticky-header">
+        <h1 class="app-title">Cabin Bar 🍸</h1>
+        <div class="search-box">
+            <input type="text" id="search" placeholder="Search drink..." onkeyup="filterGrid()">
+        </div>
+        <div class="tabs">
+            <button class="tab-btn active" onclick="switchTab('cocktails', this)">Cocktails</button>
+            <button class="tab-btn" onclick="switchTab('mocktails', this)">Mocktails</button>
+        </div>
+    </div>
+
+    <div id="grid-cocktails" class="drink-grid active">
+        <button class="drink-btn" onclick="openDrink('bloody-mary')"><span class="btn-icon">🍅</span>Bloody Mary</button>
+        <button class="drink-btn" onclick="openDrink('cosmopolitan')"><span class="btn-icon">🍸</span>Cosmopolitan</button>
+        <button class="drink-btn" onclick="openDrink('martini')"><span class="btn-icon">🍸</span>Classic Martini</button>
+        <button class="drink-btn" onclick="openDrink('kir-royale')"><span class="btn-icon">🥂</span>Kir Royale</button>
+        <button class="drink-btn" onclick="openDrink('manhattan')"><span class="btn-icon">🥃</span>Manhattan</button>
+        <button class="drink-btn" onclick="openDrink('breakfast-martini')"><span class="btn-icon">🍊</span>Breakfast Martini</button>
+        <button class="drink-btn" onclick="openDrink('espresso-martini')"><span class="btn-icon">☕️</span>Espresso Martini</button>
+        <button class="drink-btn" onclick="openDrink('mojito')"><span class="btn-icon">🌱</span>Mojito</button>
+        <button class="drink-btn" onclick="openDrink('old-fashioned')"><span class="btn-icon">🥃</span>Old Fashioned</button>
+        <button class="drink-btn" onclick="openDrink('champagne-cocktail')"><span class="btn-icon">🍾</span>Champagne Cktl</button>
+        <button class="drink-btn" onclick="openDrink('negroni')"><span class="btn-icon">🥃</span>Negroni</button>
+        <button class="drink-btn" onclick="openDrink('aperol')"><span class="btn-icon">🍹</span>Aperol Spritz</button>
+    </div>
+
+    <div id="grid-mocktails" class="drink-grid">
+        <button class="drink-btn" onclick="openDrink('orange-fizz')"><span class="btn-icon">🍊</span>Orange Fizz</button>
+        <button class="drink-btn" onclick="openDrink('apple-spritzer')"><span class="btn-icon">🍏</span>Apple Spritzer</button>
+        <button class="drink-btn" onclick="openDrink('cucumber-gimlet')"><span class="btn-icon">🥒</span>Cucumber Gimlet</button>
+        <button class="drink-btn" onclick="openDrink('virgin-mary')"><span class="btn-icon">🍅</span>Virgin Mary</button>
+        <button class="drink-btn" onclick="openDrink('virgin-mojito')"><span class="btn-icon">🌱</span>Virgin Mojito</button>
+        <button class="drink-btn" onclick="openDrink('rose-tea')"><span class="btn-icon">🌸</span>Rose Iced Tea</button>
+        <button class="drink-btn" onclick="openDrink('tropical')"><span class="btn-icon">🍌</span>Tropical Twist</button>
+        <button class="drink-btn" onclick="openDrink('citrus')"><span class="btn-icon">🍋</span>Citrus Twist</button>
+        <button class="drink-btn" onclick="openDrink('raspberry')"><span class="btn-icon">🍓</span>Raspberry Spice</button>
+        <button class="drink-btn" onclick="openDrink('mint-lemonade')"><span class="btn-icon">🍋</span>Mint Lemonade</button>
+    </div>
+</div>
+
+<div id="view-detail">
+    <div class="detail-header">
+        <button class="back-btn" onclick="closeDetail()">
+            <span style="font-size:20px; margin-right:5px;">‹</span> Back
+        </button>
+    </div>
+    <div class="detail-content" id="detail-container">
+        </div>
+</div>
+
+<script>
+const drinksDB = {
+    'bloody-mary': {
+        name: "Bloody Mary",
+        method: "Build",
+        mClass: "m-build",
+        glass: "Tumbler",
+        ice: "3-4 Cubes",
+        ing: [["Double", "Vodka"], ["Top Up", "Big Tom (or Tomato)"]],
+        garnish: "Lemon slice, Celery stick"
+    },
+    'cosmopolitan': {
+        name: "Cosmopolitan",
+        method: "Shake",
+        mClass: "m-shake",
+        glass: "Cocktail Glass",
+        ice: "Ice in Shaker",
+        ing: [["1½", "Vodka"], ["½", "Cointreau"], ["1", "Cranberry Juice"], ["½", "Lime Juice"]],
+        garnish: "No Garnish"
+    },
+    'martini': {
+        name: "Classic Martini",
+        method: "Stir or Shake",
+        mClass: "m-stir",
+        glass: "Cocktail Glass",
+        ice: "Ice in Shaker",
+        ing: [["Double", "Dry Gin (or Vodka)"], ["½", "Martini Extra Dry"]],
+        garnish: "Olive on skewer"
+    },
+    'kir-royale': {
+        name: "Kir Royale",
+        method: "Build",
+        mClass: "m-build",
+        glass: "Champagne Flute",
+        ice: "No Ice",
+        ing: [["⅓", "Crème de Cassis"], ["Top Up", "Champagne (Slowly)"]],
+        garnish: "No Garnish"
+    },
+    'manhattan': {
+        name: "Manhattan",
+        method: "Stir",
+        mClass: "m-stir",
+        glass: "Tumbler",
+        ice: "Ice in Shaker",
+        ing: [["Double", "Bourbon"], ["2 Dash", "Angostura"], ["½", "Vermouth (Dry/Rosso)"]],
+        garnish: "Cherry (Sweet) or Lemon (Dry)"
+    },
+    'breakfast-martini': {
+        name: "Breakfast Martini",
+        method: "Shake",
+        mClass: "m-shake",
+        glass: "Cocktail Glass",
+        ice: "Ice in Shaker",
+        ing: [["1", "Dry Gin"], ["½", "Cointreau"], ["1 tsp", "Marmalade"], ["½", "Lime Juice"], ["½", "Orange Juice"]],
+        garnish: "No Garnish"
+    },
+    'espresso-martini': {
+        name: "Espresso Martini",
+        method: "Hard Shake",
+        mClass: "m-shake",
+        glass: "Cocktail Glass",
+        ice: "Ice in Shaker",
+        ing: [["1", "Vodka"], ["1", "Tia Maria"], ["1", "Espresso Shot"]],
+        garnish: "3 Coffee beans"
+    },
+    'mojito': {
+        name: "Mojito",
+        method: "Muddle",
+        mClass: "m-muddle",
+        glass: "Tumbler",
+        ice: "3-4 Cubes",
+        ing: [["Base", "4 Lime + 10 Mint + 2 Sugar"], ["Double", "White Rum"], ["Top Up", "Soda Water"]],
+        garnish: "Mint sprig"
+    },
+    'old-fashioned': {
+        name: "Old Fashioned",
+        method: "Stir",
+        mClass: "m-stir",
+        glass: "Tumbler",
+        ice: "3-4 Cubes",
+        ing: [["Double", "Bourbon"], ["1", "Sugar Sachet"], ["2 Dash", "Angostura"]],
+        garnish: "Orange slice & Cherry"
+    },
+    'champagne-cocktail': {
+        name: "Champagne Cocktail",
+        method: "Build",
+        mClass: "m-build",
+        glass: "Flute",
+        ice: "No Ice",
+        ing: [["½", "Cognac"], ["Base", "1 Sugar + 2 Dash Angostura"], ["Top Up", "Champagne"]],
+        garnish: "Cherry & Orange slice"
+    },
+    'negroni': {
+        name: "Negroni",
+        method: "Stir",
+        mClass: "m-stir",
+        glass: "Tumbler",
+        ice: "Pour over 3-4 Cubes",
+        ing: [["1", "Dry Gin"], ["1", "Campari"], ["1", "Martini Rosso"]],
+        garnish: "Orange slice"
+    },
+    'aperol': {
+        name: "Aperol Spritz",
+        method: "Build",
+        mClass: "m-build",
+        glass: "Wine Glass",
+        ice: "3-4 Cubes",
+        ing: [["JCL", "Pour to ¾ full"], ["FCL", "Pour entire bottle"]],
+        garnish: "Orange slice"
+    },
+    'orange-fizz': {
+        name: "Orange Fizz",
+        method: "Build",
+        mClass: "m-build",
+        glass: "Flute",
+        ice: "No Ice",
+        ing: [["½ Glass", "Orange Juice"], ["Top Up", "Ginger Ale"]],
+        garnish: "No Garnish"
+    },
+    'apple-spritzer': {
+        name: "Apple Spritzer",
+        method: "Build",
+        mClass: "m-build",
+        glass: "Flute",
+        ice: "No Ice",
+        ing: [["½ Glass", "Apple Juice"], ["Top Up", "Soda Water"]],
+        garnish: "Mint Sprig"
+    },
+    'cucumber-gimlet': {
+        name: "Virgin Cucumber Gimlet",
+        method: "Muddle",
+        mClass: "m-muddle",
+        glass: "Tumbler",
+        ice: "3-4 Cubes",
+        ing: [["Base", "2-3 Cucumber + 1 Sugar"], ["½", "Lime Juice"], ["Top Up", "Soda Water"]],
+        garnish: "Mint Sprig"
+    },
+    'virgin-mary': {
+        name: "Virgin Mary",
+        method: "Build",
+        mClass: "m-build",
+        glass: "Tumbler",
+        ice: "3-4 Cubes",
+        ing: [["Fill", "Big Tom (or Tomato)"]],
+        garnish: "Lemon slice, Celery stick"
+    },
+    'virgin-mojito': {
+        name: "Virgin Mojito",
+        method: "Muddle",
+        mClass: "m-muddle",
+        glass: "Tumbler",
+        ice: "3-4 Cubes",
+        ing: [["Base", "4 Lime + 10 Mint + 2 Sugar"], ["Top Up", "Soda Water"]],
+        garnish: "Mint Sprig"
+    },
+    'rose-tea': {
+        name: "Rose Iced Tea",
+        method: "Shake Bottle",
+        mClass: "m-shake",
+        glass: "Tumbler",
+        ice: "Ice",
+        ing: [["Pour", "Pre-Mixed Bottle"]],
+        garnish: "Basil leaf, Edible flower"
+    },
+    'tropical': {
+        name: "Tropical Twist",
+        method: "Shake Bottle",
+        mClass: "m-shake",
+        glass: "Tumbler",
+        ice: "Ice",
+        ing: [["Pour", "Pre-Mixed Bottle"]],
+        garnish: "Basil leaf, Dehydrated green apple"
+    },
+    'citrus': {
+        name: "Citrus Twist",
+        method: "Shake Bottle",
+        mClass: "m-shake",
+        glass: "Tumbler",
+        ice: "Ice",
+        ing: [["Pour", "Pre-Mixed Bottle"]],
+        garnish: "Mint leaves, Dehydrated lime"
+    },
+    'raspberry': {
+        name: "Raspberry Spice",
+        method: "Shake Bottle",
+        mClass: "m-shake",
+        glass: "Tumbler",
+        ice: "Ice",
+        ing: [["Pour", "Pre-Mixed Bottle"]],
+        garnish: "Edible flower, Orange slice"
+    },
+    'mint-lemonade': {
+        name: "Mint Lemonade",
+        method: "Shake Bottle",
+        mClass: "m-shake",
+        glass: "Tumbler",
+        ice: "Ice",
+        ing: [["Pour", "Pre-Mixed Bottle"]],
+        garnish: "Mint sprig"
+    }
+};
+
+function switchTab(type, btn) {
+    document.getElementById('grid-cocktails').classList.remove('active');
+    document.getElementById('grid-mocktails').classList.remove('active');
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    
+    document.getElementById('grid-' + type).classList.add('active');
+    btn.classList.add('active');
+}
+
+function openDrink(id) {
+    const data = drinksDB[id];
+    if(!data) return;
+
+    let ingredientsHTML = "";
+    data.ing.forEach(item => {
+        ingredientsHTML += `<li><span class="qty">${item[0]}</span> <span>${item[1]}</span></li>`;
+    });
+
+    const html = `
+        <div class="detail-card">
+            <h2 class="detail-title">${data.name}</h2>
+            <span class="detail-method ${data.mClass}">${data.method}</span>
+            
+            <div class="info-row">
+                <span class="info-label">Glass</span>
+                <span class="info-val">${data.glass}</span>
+            </div>
+            <div class="info-row">
+                <span class="info-label">Ice</span>
+                <span class="info-val">${data.ice}</span>
+            </div>
+
+            <ul class="ingredients-list">
+                ${ingredientsHTML}
+            </ul>
+
+            <div class="garnish-box">
+                Garnish: ${data.garnish}
+            </div>
+        </div>
+    `;
+
+    document.getElementById('detail-container').innerHTML = html;
+    document.getElementById('view-detail').classList.add('open');
+}
+
+function closeDetail() {
+    document.getElementById('view-detail').classList.remove('open');
+}
+
+function filterGrid() {
+    const term = document.getElementById('search').value.toLowerCase();
+    const btns = document.querySelectorAll('.drink-btn');
+    
+    btns.forEach(btn => {
+        const txt = btn.innerText.toLowerCase();
+        if(txt.includes(term)) {
+            btn.style.display = 'flex';
+        } else {
+            btn.style.display = 'none';
+        }
+    });
+}
+</script>
+
+</body>
+</html>
