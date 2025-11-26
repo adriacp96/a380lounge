@@ -677,7 +677,7 @@ function openDrink(id) {
             <div class="garnish-box">Garnish: ${data.garnish}</div>
         </div>
 
-        <button id="toggle-prep-btn" class="action-btn" onclick="togglePrep()">i Show More Info...</button>
+        <button id="toggle-prep-btn" class="action-btn" onclick="togglePrep()">Full Preparation</button>
 
         <div id="prep-card" class="prep-card" style="display:none">
             <h3 class="prep-title">Preparation</h3>
@@ -699,10 +699,10 @@ function togglePrep() {
     const btn = document.getElementById('toggle-prep-btn');
     if (card.style.display === 'none') {
         card.style.display = 'block';
-        btn.innerText = "Hide Info";
+        btn.innerText = "Hide Preparation";
     } else {
         card.style.display = 'none';
-        btn.innerText = "i Show More Info...";
+        btn.innerText = "Full Preparation";
     }
 }
 
