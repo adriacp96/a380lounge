@@ -12,164 +12,167 @@
 
 <title>A380 Lounge</title>
 <style>
-    /* === COLOR PALETTE (Dynamic Light/Dark) === */
+    /* === COLOR PALETTE === */
     :root {
-        --primary: #d71921; /* Emirates Red */
+        --primary: #d71921;
         --bg: #F2F2F7;
         --card-bg: #ffffff;
         --header-bg: rgba(242, 242, 247, 0.95);
         --text: #000000;
         --secondary: #8E8E93;
         --input-bg: #E3E3E8;
-        --separator: #C6C6C8;
         --shadow: rgba(0,0,0,0.05);
         --btn-active: #e5e5e5;
     }
 
     @media (prefers-color-scheme: dark) {
         :root {
-            --primary: #ff453a; /* iOS Red for Dark Mode */
+            --primary: #ff453a;
             --bg: #000000;
             --card-bg: #1C1C1E;
             --header-bg: rgba(0, 0, 0, 0.95);
             --text: #FFFFFF;
             --secondary: #98989D;
             --input-bg: #2C2C2E;
-            --separator: #38383A;
             --shadow: rgba(0,0,0,0.5);
             --btn-active: #333333;
         }
     }
 
-    /* === BASE STYLES === */
-    html {
-        background-color: var(--bg); /* Ensures the safe area color matches */
-    }
-
+    /* === SETUP === */
+    html { background-color: var(--bg); height: 100%; }
     body {
-        font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", Roboto, sans-serif;
+        font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", Roboto, sans-serif;
         background-color: var(--bg);
         color: var(--text);
         margin: 0;
         padding: 0;
+        height: 100%;
+        overflow: hidden; /* Disable body scroll */
         -webkit-tap-highlight-color: transparent;
-        overflow-x: hidden;
     }
 
-    /* === MENU VIEW === */
-    #view-menu {
-        display: block;
-        padding-bottom: 50px;
-    }
-
+    /* === HEADER === */
     .sticky-header {
-        position: sticky;
+        position: absolute;
         top: 0;
-        z-index: 1000;
+        left: 0;
+        width: 100%;
+        z-index: 10;
         background: var(--header-bg);
-        backdrop-filter: blur(20px);
-        -webkit-backdrop-filter: blur(20px);
         padding-top: env(safe-area-inset-top);
-        border-bottom: 0.5px solid var(--separator);
+        padding-bottom: 10px;
+        box-shadow: 0 1px 0 rgba(128,128,128,0.1);
     }
 
     .app-title {
-        padding: 10px 20px;
+        padding: 5px 16px;
         margin: 0;
-        font-size: 28px;
+        font-size: 22px;
         font-weight: 800;
         color: var(--text);
-        letter-spacing: -0.5px;
         display: flex;
         justify-content: space-between;
         align-items: center;
     }
 
-    .search-box {
-        padding: 0 16px 10px 16px;
+    .controls-row {
+        display: flex;
+        padding: 5px 16px 0 16px;
+        gap: 10px;
     }
 
+    .search-box { flex: 1; }
+    
     input[type="text"] {
         width: 100%;
-        padding: 12px;
-        border-radius: 10px;
+        padding: 8px 12px;
+        border-radius: 8px;
         border: none;
         background: var(--input-bg);
-        font-size: 17px;
+        font-size: 15px;
         box-sizing: border-box;
         color: var(--text);
         outline: none;
+        height: 36px;
     }
 
     .tabs {
         display: flex;
-        padding: 0 16px 12px 16px;
-        gap: 10px;
+        background: var(--input-bg);
+        border-radius: 8px;
+        padding: 2px;
+        height: 36px;
+        box-sizing: border-box;
     }
 
     .tab-btn {
-        flex: 1;
-        padding: 8px;
-        border-radius: 8px;
+        padding: 0 12px;
+        border-radius: 6px;
         font-weight: 600;
-        font-size: 14px;
-        background: var(--input-bg);
+        font-size: 13px;
+        background: transparent;
         border: none;
-        color: var(--text);
+        color: var(--secondary);
         transition: all 0.2s;
-        cursor: pointer;
+        height: 100%;
     }
 
     .tab-btn.active {
-        background: var(--primary);
-        color: white;
+        background: var(--card-bg); /* White/Black in tabs */
+        color: var(--text);
+        box-shadow: 0 1px 3px rgba(0,0,0,0.1);
     }
 
-    /* === DRINK GRID === */
+    /* === MAIN GRID CONTAINER === */
+    #view-menu {
+        height: 100%;
+        box-sizing: border-box;
+        padding-top: calc(env(safe-area-inset-top) + 90px); /* Space for header */
+        padding-bottom: env(safe-area-inset-bottom);
+        overflow-y: auto; /* Allow scroll if screen is unexpectedly small */
+    }
+
     .drink-grid {
         display: none;
-        grid-template-columns: 1fr 1fr;
-        gap: 12px;
-        padding: 16px;
+        grid-template-columns: repeat(3, 1fr); /* 3 COLUMNS */
+        gap: 10px;
+        padding: 12px;
+        max-width: 600px;
+        margin: 0 auto;
     }
 
-    .drink-grid.active {
-        display: grid;
-    }
+    .drink-grid.active { display: grid; }
 
     .drink-btn {
         background: var(--card-bg);
-        border-radius: 16px;
-        padding: 24px 10px;
+        border-radius: 14px;
+        padding: 12px 4px;
         text-align: center;
-        box-shadow: 0 2px 8px var(--shadow);
+        box-shadow: 0 2px 5px var(--shadow);
         border: none;
         display: flex;
         flex-direction: column;
         align-items: center;
-        gap: 12px;
+        justify-content: center;
+        gap: 8px;
         cursor: pointer;
-        transition: transform 0.1s;
+        aspect-ratio: 1 / 1; /* Square buttons */
     }
 
-    .drink-btn:active {
-        transform: scale(0.97);
-        background: var(--btn-active);
-    }
+    .drink-btn:active { transform: scale(0.96); background: var(--btn-active); }
 
-    .btn-icon {
-        font-size: 42px;
-        line-height: 1;
-    }
-
+    .btn-icon { font-size: 34px; line-height: 1; margin-bottom: 2px; }
+    
     .btn-label {
-        font-size: 16px;
+        font-size: 12px;
         font-weight: 600;
         color: var(--text);
-        line-height: 1.2;
+        line-height: 1.1;
+        max-width: 90%;
     }
 
-    /* === DETAIL VIEW === */
+    /* === DETAIL OVERLAY === */
     #view-detail {
         position: fixed;
         top: 0;
@@ -179,23 +182,20 @@
         background: var(--bg);
         z-index: 2000;
         transform: translateX(100%);
-        transition: transform 0.3s cubic-bezier(0.25, 1, 0.5, 1);
+        transition: transform 0.25s ease-out;
         display: flex;
         flex-direction: column;
         padding-top: env(safe-area-inset-top);
     }
 
-    #view-detail.open {
-        transform: translateX(0);
-    }
+    #view-detail.open { transform: translateX(0); }
 
     .detail-header {
         padding: 10px 16px;
         background: var(--header-bg);
         display: flex;
         align-items: center;
-        border-bottom: 0.5px solid var(--separator);
-        z-index: 2001;
+        border-bottom: 0.5px solid rgba(128,128,128,0.2);
     }
 
     .back-btn {
@@ -206,47 +206,25 @@
         font-weight: 600;
         display: flex;
         align-items: center;
-        padding: 10px 0;
-        cursor: pointer;
+        padding: 8px 0;
     }
 
-    .detail-content {
-        flex: 1;
-        overflow-y: auto;
-        padding: 20px;
-    }
-
+    .detail-content { flex: 1; overflow-y: auto; padding: 20px; }
+    
     .detail-card {
         background: var(--card-bg);
         border-radius: 20px;
         padding: 24px 20px;
-        box-shadow: 0 4px 12px var(--shadow);
         text-align: center;
     }
 
-    .detail-icon-large {
-        font-size: 60px;
-        margin-bottom: 10px;
-        display: block;
-    }
-
-    .detail-title {
-        margin: 0 0 10px 0;
-        font-size: 28px;
-        color: var(--text);
-        font-weight: 800;
-    }
+    .detail-icon-large { font-size: 60px; display: block; margin-bottom: 10px; }
+    .detail-title { margin: 0 0 10px 0; font-size: 26px; color: var(--text); }
     
     .detail-method {
-        display: inline-block;
-        font-size: 13px;
-        text-transform: uppercase;
-        font-weight: 700;
-        padding: 6px 12px;
-        border-radius: 20px;
-        margin-bottom: 25px;
-        color: white;
-        background: #333;
+        display: inline-block; font-size: 12px; font-weight: 700;
+        padding: 4px 10px; border-radius: 12px; margin-bottom: 20px;
+        color: white; background: #333; text-transform: uppercase;
     }
     
     .m-shake { background: #007AFF; }
@@ -256,270 +234,89 @@
 
     .info-container {
         background: var(--input-bg);
-        border-radius: 16px;
+        border-radius: 12px;
         padding: 0 16px;
         margin-bottom: 20px;
         text-align: left;
     }
 
     .info-row {
-        display: flex;
-        justify-content: space-between;
-        padding: 16px 0;
-        border-bottom: 1px solid rgba(128, 128, 128, 0.2);
-        font-size: 16px;
-        color: var(--text);
+        display: flex; justify-content: space-between; padding: 14px 0;
+        border-bottom: 1px solid rgba(128,128,128,0.1); font-size: 15px;
     }
-    
     .info-row:last-child { border-bottom: none; }
     .info-label { color: var(--secondary); }
     .info-val { font-weight: 600; }
 
-    .ingredients-list {
-        text-align: left;
-        list-style: none;
-        padding: 0;
-        margin: 0;
-    }
-
-    .ingredients-list li {
-        margin-bottom: 12px;
-        font-size: 17px;
-        line-height: 1.4;
-        display: flex;
-        align-items: baseline;
-    }
-
-    .qty { 
-        font-weight: 700; 
-        min-width: 70px; 
-        color: var(--primary); 
-    }
+    .ingredients-list { text-align: left; list-style: none; padding: 0; margin: 0; }
+    .ingredients-list li { margin-bottom: 8px; font-size: 16px; display: flex; }
+    .qty { font-weight: 700; min-width: 60px; color: var(--primary); }
     
     .garnish-box {
-        margin-top: 25px;
-        background: var(--input-bg);
-        padding: 16px;
-        border-radius: 12px;
-        font-size: 16px;
-        color: var(--text);
-        font-weight: 500;
-        text-align: center;
+        margin-top: 20px; background: var(--input-bg); padding: 12px;
+        border-radius: 12px; font-size: 15px; font-weight: 500;
     }
-
 </style>
 </head>
 <body>
 
-<div id="view-menu">
-    <div class="sticky-header">
-        <h1 class="app-title">A380 Lounge 🍸</h1>
+<div class="sticky-header">
+    <div class="app-title">
+        <span>A380 Lounge</span>
+        <span style="font-size:20px">🍸</span>
+    </div>
+    <div class="controls-row">
         <div class="search-box">
-            <input type="text" id="search" placeholder="Search drink..." onkeyup="filterGrid()">
+            <input type="text" id="search" placeholder="Search..." onkeyup="filterGrid()">
         </div>
         <div class="tabs">
             <button class="tab-btn active" onclick="switchTab('cocktails', this)">Cocktails</button>
             <button class="tab-btn" onclick="switchTab('mocktails', this)">Mocktails</button>
         </div>
     </div>
+</div>
 
+<div id="view-menu">
     <div id="grid-cocktails" class="drink-grid active"></div>
-
     <div id="grid-mocktails" class="drink-grid"></div>
 </div>
 
 <div id="view-detail">
     <div class="detail-header">
         <button class="back-btn" onclick="closeDetail()">
-            <span style="font-size:24px; margin-right:5px; margin-bottom: 2px;">‹</span> Back
+            <span style="font-size:22px; margin-right:4px; margin-bottom:2px;">‹</span> Back
         </button>
     </div>
-    <div class="detail-content" id="detail-container">
-        </div>
+    <div class="detail-content" id="detail-container"></div>
 </div>
 
 <script>
-/* DATA SOURCE */
 const drinksDB = {
-    'bloody-mary': {
-        name: "Bloody Mary",
-        type: "cocktails", icon: "🍅",
-        method: "Build", mClass: "m-build",
-        glass: "Tumbler", ice: "3-4 Cubes",
-        ing: [["Double", "Vodka"], ["Top Up", "Big Tom (or Tomato)"]],
-        garnish: "Lemon slice, Celery stick"
-    },
-    'cosmopolitan': {
-        name: "Cosmopolitan",
-        type: "cocktails", icon: "🍸",
-        method: "Shake", mClass: "m-shake",
-        glass: "Cocktail Glass", ice: "Ice in Shaker",
-        ing: [["1½", "Vodka"], ["½", "Cointreau"], ["1", "Cranberry Juice"], ["½", "Lime Juice"]],
-        garnish: "No Garnish"
-    },
-    'martini': {
-        name: "Classic Martini",
-        type: "cocktails", icon: "🍸",
-        method: "Stir or Shake", mClass: "m-stir",
-        glass: "Cocktail Glass", ice: "Ice in Shaker",
-        ing: [["Double", "Dry Gin (or Vodka)"], ["½", "Martini Extra Dry"]],
-        garnish: "Olive on skewer"
-    },
-    'kir-royale': {
-        name: "Kir Royale",
-        type: "cocktails", icon: "🥂",
-        method: "Build", mClass: "m-build",
-        glass: "Champagne Flute", ice: "No Ice",
-        ing: [["⅓", "Crème de Cassis"], ["Top Up", "Champagne"]],
-        garnish: "No Garnish"
-    },
-    'manhattan': {
-        name: "Manhattan",
-        type: "cocktails", icon: "🥃",
-        method: "Stir", mClass: "m-stir",
-        glass: "Tumbler", ice: "Ice in Shaker",
-        ing: [["Double", "Bourbon"], ["2 Dash", "Angostura"], ["½", "Vermouth"]],
-        garnish: "Cherry (Sweet) or Lemon (Dry)"
-    },
-    'breakfast-martini': {
-        name: "Breakfast Martini",
-        type: "cocktails", icon: "🍊",
-        method: "Shake", mClass: "m-shake",
-        glass: "Cocktail Glass", ice: "Ice in Shaker",
-        ing: [["1", "Dry Gin"], ["½", "Cointreau"], ["1 tsp", "Marmalade"], ["½", "Lime"], ["½", "Orange"]],
-        garnish: "No Garnish"
-    },
-    'espresso-martini': {
-        name: "Espresso Martini",
-        type: "cocktails", icon: "☕️",
-        method: "Hard Shake", mClass: "m-shake",
-        glass: "Cocktail Glass", ice: "Ice in Shaker",
-        ing: [["1", "Vodka"], ["1", "Tia Maria"], ["1", "Espresso Shot"]],
-        garnish: "3 Coffee beans"
-    },
-    'mojito': {
-        name: "Mojito",
-        type: "cocktails", icon: "🌱",
-        method: "Muddle", mClass: "m-muddle",
-        glass: "Tumbler", ice: "3-4 Cubes",
-        ing: [["Base", "4 Lime + 10 Mint + 2 Sugar"], ["Double", "White Rum"], ["Top Up", "Soda Water"]],
-        garnish: "Mint sprig"
-    },
-    'old-fashioned': {
-        name: "Old Fashioned",
-        type: "cocktails", icon: "🥃",
-        method: "Stir", mClass: "m-stir",
-        glass: "Tumbler", ice: "3-4 Cubes",
-        ing: [["Double", "Bourbon"], ["1", "Sugar Sachet"], ["2 Dash", "Angostura"]],
-        garnish: "Orange slice & Cherry"
-    },
-    'champagne-cocktail': {
-        name: "Champagne Cktl",
-        type: "cocktails", icon: "🍾",
-        method: "Build", mClass: "m-build",
-        glass: "Flute", ice: "No Ice",
-        ing: [["½", "Cognac"], ["Base", "1 Sugar + 2 Dash Angostura"], ["Top Up", "Champagne"]],
-        garnish: "Cherry & Orange slice"
-    },
-    'negroni': {
-        name: "Negroni",
-        type: "cocktails", icon: "🥃",
-        method: "Stir", mClass: "m-stir",
-        glass: "Tumbler", ice: "Pour over 3-4 Cubes",
-        ing: [["1", "Dry Gin"], ["1", "Campari"], ["1", "Martini Rosso"]],
-        garnish: "Orange slice"
-    },
-    'aperol': {
-        name: "Aperol Spritz",
-        type: "cocktails", icon: "🍹",
-        method: "Build", mClass: "m-build",
-        glass: "Wine Glass", ice: "3-4 Cubes",
-        ing: [["JCL", "Pour to ¾ full"], ["FCL", "Pour entire bottle"]],
-        garnish: "Orange slice"
-    },
-    'orange-fizz': {
-        name: "Orange Fizz",
-        type: "mocktails", icon: "🍊",
-        method: "Build", mClass: "m-build",
-        glass: "Flute", ice: "No Ice",
-        ing: [["½ Glass", "Orange Juice"], ["Top Up", "Ginger Ale"]],
-        garnish: "No Garnish"
-    },
-    'apple-spritzer': {
-        name: "Apple Spritzer",
-        type: "mocktails", icon: "🍏",
-        method: "Build", mClass: "m-build",
-        glass: "Flute", ice: "No Ice",
-        ing: [["½ Glass", "Apple Juice"], ["Top Up", "Soda Water"]],
-        garnish: "Mint Sprig"
-    },
-    'cucumber-gimlet': {
-        name: "Cucumber Gimlet",
-        type: "mocktails", icon: "🥒",
-        method: "Muddle", mClass: "m-muddle",
-        glass: "Tumbler", ice: "3-4 Cubes",
-        ing: [["Base", "2-3 Cucumber + 1 Sugar"], ["½", "Lime Juice"], ["Top Up", "Soda Water"]],
-        garnish: "Mint Sprig"
-    },
-    'virgin-mary': {
-        name: "Virgin Mary",
-        type: "mocktails", icon: "🍅",
-        method: "Build", mClass: "m-build",
-        glass: "Tumbler", ice: "3-4 Cubes",
-        ing: [["Fill", "Big Tom (or Tomato)"]],
-        garnish: "Lemon slice, Celery stick"
-    },
-    'virgin-mojito': {
-        name: "Virgin Mojito",
-        type: "mocktails", icon: "🌱",
-        method: "Muddle", mClass: "m-muddle",
-        glass: "Tumbler", ice: "3-4 Cubes",
-        ing: [["Base", "4 Lime + 10 Mint + 2 Sugar"], ["Top Up", "Soda Water"]],
-        garnish: "Mint Sprig"
-    },
-    'rose-tea': {
-        name: "Rose Iced Tea",
-        type: "mocktails", icon: "🌸",
-        method: "Shake Bottle", mClass: "m-shake",
-        glass: "Tumbler", ice: "Ice",
-        ing: [["Pour", "Pre-Mixed Bottle"]],
-        garnish: "Basil leaf, Edible flower"
-    },
-    'tropical': {
-        name: "Tropical Twist",
-        type: "mocktails", icon: "🍌",
-        method: "Shake Bottle", mClass: "m-shake",
-        glass: "Tumbler", ice: "Ice",
-        ing: [["Pour", "Pre-Mixed Bottle"]],
-        garnish: "Basil leaf, Dehydrated green apple"
-    },
-    'citrus': {
-        name: "Citrus Twist",
-        type: "mocktails", icon: "🍋",
-        method: "Shake Bottle", mClass: "m-shake",
-        glass: "Tumbler", ice: "Ice",
-        ing: [["Pour", "Pre-Mixed Bottle"]],
-        garnish: "Mint leaves, Dehydrated lime"
-    },
-    'raspberry': {
-        name: "Raspberry Spice",
-        type: "mocktails", icon: "🍓",
-        method: "Shake Bottle", mClass: "m-shake",
-        glass: "Tumbler", ice: "Ice",
-        ing: [["Pour", "Pre-Mixed Bottle"]],
-        garnish: "Edible flower, Orange slice"
-    },
-    'mint-lemonade': {
-        name: "Mint Lemonade",
-        type: "mocktails", icon: "🍋",
-        method: "Shake Bottle", mClass: "m-shake",
-        glass: "Tumbler", ice: "Ice",
-        ing: [["Pour", "Pre-Mixed Bottle"]],
-        garnish: "Mint sprig"
-    }
+    'bloody-mary': { name: "Bloody Mary", type: "cocktails", icon: "🍅", method: "Build", mClass: "m-build", glass: "Tumbler", ice: "3-4 Cubes", ing: [["Double", "Vodka"], ["Top Up", "Big Tom"]], garnish: "Lemon, Celery" },
+    'cosmopolitan': { name: "Cosmopolitan", type: "cocktails", icon: "🍸", method: "Shake", mClass: "m-shake", glass: "Cocktail Glass", ice: "In Shaker", ing: [["1½", "Vodka"], ["½", "Cointreau"], ["1", "Cranberry"], ["½", "Lime"]], garnish: "None" },
+    'martini': { name: "Classic Martini", type: "cocktails", icon: "🍸", method: "Stir/Shake", mClass: "m-stir", glass: "Cocktail Glass", ice: "In Shaker", ing: [["Double", "Gin/Vodka"], ["½", "Martini Dry"]], garnish: "Olive" },
+    'kir-royale': { name: "Kir Royale", type: "cocktails", icon: "🥂", method: "Build", mClass: "m-build", glass: "Flute", ice: "None", ing: [["⅓", "Cassis"], ["Top Up", "Champagne"]], garnish: "None" },
+    'manhattan': { name: "Manhattan", type: "cocktails", icon: "🥃", method: "Stir", mClass: "m-stir", glass: "Tumbler", ice: "In Shaker", ing: [["Double", "Bourbon"], ["2 Dash", "Angostura"], ["½", "Vermouth"]], garnish: "Cherry/Lemon" },
+    'breakfast-martini': { name: "Breakfast Martini", type: "cocktails", icon: "🍊", method: "Shake", mClass: "m-shake", glass: "Cocktail Glass", ice: "In Shaker", ing: [["1", "Gin"], ["½", "Cointreau"], ["1 tsp", "Marmalade"], ["½", "Lime"], ["½", "Orange"]], garnish: "None" },
+    'espresso-martini': { name: "Espresso Martini", type: "cocktails", icon: "☕️", method: "Hard Shake", mClass: "m-shake", glass: "Cocktail Glass", ice: "In Shaker", ing: [["1", "Vodka"], ["1", "Tia Maria"], ["1", "Espresso"]], garnish: "3 Beans" },
+    'mojito': { name: "Mojito", type: "cocktails", icon: "🌱", method: "Muddle", mClass: "m-muddle", glass: "Tumbler", ice: "3-4 Cubes", ing: [["Base", "Lime/Mint/Sugar"], ["Double", "Rum"], ["Top Up", "Soda"]], garnish: "Mint" },
+    'old-fashioned': { name: "Old Fashioned", type: "cocktails", icon: "🥃", method: "Stir", mClass: "m-stir", glass: "Tumbler", ice: "3-4 Cubes", ing: [["Double", "Bourbon"], ["1", "Sugar"], ["2 Dash", "Angostura"]], garnish: "Orange, Cherry" },
+    'champagne-cocktail': { name: "Champagne Cktl", type: "cocktails", icon: "🍾", method: "Build", mClass: "m-build", glass: "Flute", ice: "None", ing: [["½", "Cognac"], ["Base", "Sugar/Bitters"], ["Top Up", "Champagne"]], garnish: "Cherry, Orange" },
+    'negroni': { name: "Negroni", type: "cocktails", icon: "🥃", method: "Stir", mClass: "m-stir", glass: "Tumbler", ice: "Over 3-4 Cubes", ing: [["1", "Gin"], ["1", "Campari"], ["1", "Martini Rosso"]], garnish: "Orange" },
+    'aperol': { name: "Aperol Spritz", type: "cocktails", icon: "🍹", method: "Build", mClass: "m-build", glass: "Wine Glass", ice: "3-4 Cubes", ing: [["JCL", "¾ Full"], ["FCL", "Full Bottle"]], garnish: "Orange" },
+
+    'orange-fizz': { name: "Orange Fizz", type: "mocktails", icon: "🍊", method: "Build", mClass: "m-build", glass: "Flute", ice: "None", ing: [["½", "Orange Juice"], ["Top Up", "Ginger Ale"]], garnish: "None" },
+    'apple-spritzer': { name: "Apple Spritzer", type: "mocktails", icon: "🍏", method: "Build", mClass: "m-build", glass: "Flute", ice: "None", ing: [["½", "Apple Juice"], ["Top Up", "Soda"]], garnish: "Mint" },
+    'cucumber-gimlet': { name: "Cucumber Gimlet", type: "mocktails", icon: "🥒", method: "Muddle", mClass: "m-muddle", glass: "Tumbler", ice: "3-4 Cubes", ing: [["Base", "Cuc/Sugar/Lime"], ["Top Up", "Soda"]], garnish: "Mint" },
+    'virgin-mary': { name: "Virgin Mary", type: "mocktails", icon: "🍅", method: "Build", mClass: "m-build", glass: "Tumbler", ice: "3-4 Cubes", ing: [["Fill", "Big Tom"]], garnish: "Lemon, Celery" },
+    'virgin-mojito': { name: "Virgin Mojito", type: "mocktails", icon: "🌱", method: "Muddle", mClass: "m-muddle", glass: "Tumbler", ice: "3-4 Cubes", ing: [["Base", "Lime/Mint/Sugar"], ["Top Up", "Soda"]], garnish: "Mint" },
+    'rose-tea': { name: "Rose Iced Tea", type: "mocktails", icon: "🌸", method: "Shake Bottle", mClass: "m-shake", glass: "Tumbler", ice: "Ice", ing: [["Pour", "Pre-Mixed"]], garnish: "Basil, Flower" },
+    'tropical': { name: "Tropical Twist", type: "mocktails", icon: "🍌", method: "Shake Bottle", mClass: "m-shake", glass: "Tumbler", ice: "Ice", ing: [["Pour", "Pre-Mixed"]], garnish: "Basil, Apple" },
+    'citrus': { name: "Citrus Twist", type: "mocktails", icon: "🍋", method: "Shake Bottle", mClass: "m-shake", glass: "Tumbler", ice: "Ice", ing: [["Pour", "Pre-Mixed"]], garnish: "Mint, Lime" },
+    'raspberry': { name: "Raspberry Spice", type: "mocktails", icon: "🍓", method: "Shake Bottle", mClass: "m-shake", glass: "Tumbler", ice: "Ice", ing: [["Pour", "Pre-Mixed"]], garnish: "Flower, Orange" },
+    'mint-lemonade': { name: "Mint Lemonade", type: "mocktails", icon: "🍋", method: "Shake Bottle", mClass: "m-shake", glass: "Tumbler", ice: "Ice", ing: [["Pour", "Pre-Mixed"]], garnish: "Mint" }
 };
 
-/* INITIALIZATION */
 const cockDiv = document.getElementById('grid-cocktails');
 const mockDiv = document.getElementById('grid-mocktails');
 
@@ -527,33 +324,20 @@ for (const [key, data] of Object.entries(drinksDB)) {
     const btn = document.createElement('button');
     btn.className = 'drink-btn';
     btn.onclick = () => openDrink(key);
-    
-    // Grid Item Content
-    btn.innerHTML = `
-        <div class="btn-icon">${data.icon}</div>
-        <div class="btn-label">${data.name}</div>
-    `;
-    
-    if(data.type === 'cocktails') {
-        cockDiv.appendChild(btn);
-    } else {
-        mockDiv.appendChild(btn);
-    }
+    btn.innerHTML = `<div class="btn-icon">${data.icon}</div><div class="btn-label">${data.name}</div>`;
+    if(data.type === 'cocktails') cockDiv.appendChild(btn);
+    else mockDiv.appendChild(btn);
 }
 
 function switchTab(type, btn) {
-    document.getElementById('grid-cocktails').classList.remove('active');
-    document.getElementById('grid-mocktails').classList.remove('active');
+    document.querySelectorAll('.drink-grid').forEach(g => g.classList.remove('active'));
     document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-    
     document.getElementById('grid-' + type).classList.add('active');
     btn.classList.add('active');
 }
 
 function openDrink(id) {
     const data = drinksDB[id];
-    if(!data) return;
-
     let ingredientsHTML = "";
     data.ing.forEach(item => {
         ingredientsHTML += `<li><span class="qty">${item[0]}</span> <span>${item[1]}</span></li>`;
@@ -564,28 +348,14 @@ function openDrink(id) {
             <span class="detail-icon-large">${data.icon}</span>
             <h2 class="detail-title">${data.name}</h2>
             <span class="detail-method ${data.mClass}">${data.method}</span>
-            
             <div class="info-container">
-                <div class="info-row">
-                    <span class="info-label">Glass</span>
-                    <span class="info-val">${data.glass}</span>
-                </div>
-                <div class="info-row">
-                    <span class="info-label">Ice</span>
-                    <span class="info-val">${data.ice}</span>
-                </div>
+                <div class="info-row"><span class="info-label">Glass</span><span class="info-val">${data.glass}</span></div>
+                <div class="info-row"><span class="info-label">Ice</span><span class="info-val">${data.ice}</span></div>
             </div>
-
-            <ul class="ingredients-list">
-                ${ingredientsHTML}
-            </ul>
-
-            <div class="garnish-box">
-                Garnish: ${data.garnish}
-            </div>
+            <ul class="ingredients-list">${ingredientsHTML}</ul>
+            <div class="garnish-box">Garnish: ${data.garnish}</div>
         </div>
     `;
-
     document.getElementById('detail-container').innerHTML = html;
     document.getElementById('view-detail').classList.add('open');
 }
@@ -596,18 +366,10 @@ function closeDetail() {
 
 function filterGrid() {
     const term = document.getElementById('search').value.toLowerCase();
-    const btns = document.querySelectorAll('.drink-btn');
-    
-    btns.forEach(btn => {
-        const txt = btn.innerText.toLowerCase();
-        if(txt.includes(term)) {
-            btn.style.display = 'flex';
-        } else {
-            btn.style.display = 'none';
-        }
+    document.querySelectorAll('.drink-btn').forEach(btn => {
+        btn.style.display = btn.innerText.toLowerCase().includes(term) ? 'flex' : 'none';
     });
 }
 </script>
-
 </body>
 </html>
