@@ -6,6 +6,10 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="A380 Lounge">
+
+<meta name="theme-color" content="#F2F2F7" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#000000" media="(prefers-color-scheme: dark)">
+
 <title>A380 Lounge</title>
 <style>
     /* === COLOR PALETTE (Dynamic Light/Dark) === */
@@ -38,6 +42,10 @@
     }
 
     /* === BASE STYLES === */
+    html {
+        background-color: var(--bg); /* Ensures the safe area color matches */
+    }
+
     body {
         font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", Roboto, sans-serif;
         background-color: var(--bg);
